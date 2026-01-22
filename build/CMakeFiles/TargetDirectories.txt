@@ -1,0 +1,5 @@
+/home/nsk/dev/backend_notes/build/CMakeFiles/imgui.dir
+/home/nsk/dev/backend_notes/build/CMakeFiles/implot.dir
+/home/nsk/dev/backend_notes/build/CMakeFiles/main.dir
+/home/nsk/dev/backend_notes/build/CMakeFiles/edit_cache.dir
+/home/nsk/dev/backend_notes/build/CMakeFiles/rebuild_cache.dir
