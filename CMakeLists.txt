@@ -31,6 +31,7 @@ endif()
 add_library(imgui STATIC
     ${THIRD_PARTY_DIR}/imgui/imgui.cpp
     ${THIRD_PARTY_DIR}/imgui/imgui_draw.cpp
+    ${THIRD_PARTY_DIR}/imgui/imgui_demo.cpp
     ${THIRD_PARTY_DIR}/imgui/imgui_tables.cpp
     ${THIRD_PARTY_DIR}/imgui/imgui_widgets.cpp
     ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl2.cpp
@@ -41,6 +42,7 @@ target_compile_options(imgui PRIVATE -fPIC)
 
 add_library(implot STATIC
     ${THIRD_PARTY_DIR}/implot/implot.cpp
+    ${THIRD_PARTY_DIR}/implot/implot_demo.cpp
     ${THIRD_PARTY_DIR}/implot/implot_items.cpp
 )
 target_include_directories(implot PUBLIC ${THIRD_PARTY_DIR}/implot)
