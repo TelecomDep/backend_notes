@@ -22,10 +22,10 @@ include_directories(${INCLUDE_DIR})
 
 # Проверка на дурака, установили ли библиотеки 
 if(NOT EXISTS "${THIRD_PARTY_DIR}/imgui/")
-    message(FATAL_ERROR "ImGui submodule not found. Did you run 'git submodule update --init --recursive'?")
+    message(FATAL_ERROR "ImGui submodule not found. Did you run 'git submodule update --init --recursive' or 'git submodule update --remote --recursive'?")
 endif()
 if(NOT EXISTS "${THIRD_PARTY_DIR}/implot/")
-    message(FATAL_ERROR "ImPlot submodule not found. Did you run 'git submodule update --init --recursive'?")
+    message(FATAL_ERROR "ImPlot submodule not found. Did you run 'git submodule update --init --recursive' or 'git submodule update --remote --recursive'?")
 endif()
 
 add_library(imgui STATIC
