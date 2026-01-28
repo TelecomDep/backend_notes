@@ -17,49 +17,9 @@ inline T RandomRange(T min, T max) {
     return min + scale * ( max - min );
 }
 
-struct ScrollingBuffer {
-    int MaxSize;
-    int Offset;
-    ImVector<ImVec2> Data;
-    ScrollingBuffer(int max_size = 2000) {
-        MaxSize = max_size;
-        Offset  = 0;
-        Data.reserve(MaxSize);
-    }
-    void AddPoint(float x, float y) {
-        if (Data.size() < MaxSize)
-            Data.push_back(ImVec2(x,y));
-        else {
-            Data[Offset] = ImVec2(x,y);
-            Offset =  (Offset + 1) % MaxSize;
-        }
-    }
-    void Erase() {
-        if (Data.size() > 0) {
-            Data.shrink(0);
-            Offset  = 0;
-        }
-    }
-};
-
-struct RollingBuffer {
-    float Span;
-    ImVector<ImVec2> Data;
-    RollingBuffer() {
-        Span = 10.0f;
-        Data.reserve(2000);
-    }
-    void AddPoint(float x, float y) {
-        float xmod = fmodf(x, Span);
-        if (!Data.empty() && xmod < Data.back().x)
-            Data.shrink(0);
-        Data.push_back(ImVec2(xmod, y));
-    }
-};
 
 
-int main(int argc, char *argv[]) {
-
+void run_gui(){
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
     SDL_Window* window = SDL_CreateWindow(
         "Backend start", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -69,10 +29,10 @@ int main(int argc, char *argv[]) {
     ImGui::CreateContext();
     ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Включить Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Включить Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Включить Docking
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Включить Multi-Viewport / Platform Windows. Позволяет работать "окнам" вне основного окна. 
 
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -81,9 +41,10 @@ int main(int argc, char *argv[]) {
     // auto last_frame_time = std::chrono::steady_clock::now();
     while (running) {
 
-        // Poll and handle events (inputs, window resize, etc.)
+        // Обработка event'ов (inputs, window resize, mouse moving, etc.)
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            std::cout << "Processing some event: "<< event.type << " timestamp: " << event.motion.timestamp << std::endl;
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT) {
                 running = false;
@@ -111,52 +72,10 @@ int main(int argc, char *argv[]) {
 
         // ImGui::ShowDemoWindow();
         // ImPlot::ShowDemoWindow();
-
-        {
-            ImGui::Begin("Hello, Plots!");
-            static ScrollingBuffer sdata1, sdata2;
-            static RollingBuffer rdata1, rdata2;
-            ImVec2 mouse = ImGui::GetMousePos();
-
-            // Add points to the buffers every 0.02 seconds
-            static float t = 0, last_t = 0.0f;
-            if (t == 0 || t - last_t >= 0.001f)
-            {
-                sdata1.AddPoint(t, mouse.x * 0.0005f);
-                rdata1.AddPoint(t, mouse.x * 0.0005f);
-                sdata2.AddPoint(t, mouse.y * 0.0005f);
-                rdata2.AddPoint(t, mouse.y * 0.0005f);
-                last_t = t;
-            }
-            t += ImGui::GetIO().DeltaTime;
-
-            static float history = 10.0f;
-            ImGui::SliderFloat("History",&history,1,30,"%.1f s");
-            rdata1.Span = history;
-            rdata2.Span = history;
-
-            static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels;
-
-            if (ImPlot::BeginPlot("##Scrolling", ImVec2(-1,ImGui::GetTextLineHeight()*10))) {
-                ImPlot::SetupAxes(nullptr, nullptr, flags, flags);
-                ImPlot::SetupAxisLimits(ImAxis_X1,t - history, t, ImGuiCond_Always);
-                ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
-                ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL,0.5f);
-                ImPlot::PlotShaded("Mouse X", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), -INFINITY, 0, sdata1.Offset, 2 * sizeof(float));
-                ImPlot::PlotLine("Mouse Y", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2*sizeof(float));
-                ImPlot::EndPlot();
-            }
-            if (ImPlot::BeginPlot("##Rolling", ImVec2(-1,ImGui::GetTextLineHeight()*10))) {
-                ImPlot::SetupAxes(nullptr, nullptr, flags, flags);
-                ImPlot::SetupAxisLimits(ImAxis_X1,0,history, ImGuiCond_Always);
-                ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
-                ImPlot::PlotLine("Mouse X", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
-                ImPlot::PlotLine("Mouse Y", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
-                ImPlot::EndPlot();
-            }
-            
-            ImGui::End();
-        }
+        ImGui::Begin("Mouse Position");
+        ImVec2 mouse = ImGui::GetMousePos();
+        ImGui::Text("Mouse position: x = %f, y = %f", mouse.x, mouse.y);
+        ImGui::End();
 
         {
             ImGui::Begin("My Plot!");
@@ -176,9 +95,6 @@ int main(int argc, char *argv[]) {
         }
 
 
-
-
-
         ImGui::Render();
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -194,6 +110,57 @@ int main(int argc, char *argv[]) {
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
 
+
+int main(int argc, char *argv[]) {
+
+    std::thread gui_thread(run_gui);
+    gui_thread.join();
     return 0;
 }
+
+        // Cool plots
+        // {
+        //     ImGui::Begin("Hello, Plots!");
+        //     static ScrollingBuffer sdata1, sdata2;
+        //     static RollingBuffer rdata1, rdata2;
+        //     // Add points to the buffers every 0.02 seconds
+        //     static float t = 0, last_t = 0.0f;
+        //     if (t == 0 || t - last_t >= 0.001f)
+        //     {
+        //         sdata1.AddPoint(t, mouse.x * 0.0005f);
+        //         rdata1.AddPoint(t, mouse.x * 0.0005f);
+        //         sdata2.AddPoint(t, mouse.y * 0.0005f);
+        //         rdata2.AddPoint(t, mouse.y * 0.0005f);
+        //         last_t = t;
+        //     }
+        //     t += ImGui::GetIO().DeltaTime;
+
+        //     static float history = 10.0f;
+        //     ImGui::SliderFloat("History",&history,1,30,"%.1f s");
+        //     rdata1.Span = history;
+        //     rdata2.Span = history;
+
+        //     static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels;
+
+        //     if (ImPlot::BeginPlot("##Scrolling", ImVec2(-1,ImGui::GetTextLineHeight()*10))) {
+        //         ImPlot::SetupAxes(nullptr, nullptr, flags, flags);
+        //         ImPlot::SetupAxisLimits(ImAxis_X1,t - history, t, ImGuiCond_Always);
+        //         ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
+        //         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL,0.5f);
+        //         ImPlot::PlotShaded("Mouse X", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), -INFINITY, 0, sdata1.Offset, 2 * sizeof(float));
+        //         ImPlot::PlotLine("Mouse Y", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2*sizeof(float));
+        //         ImPlot::EndPlot();
+        //     }
+        //     if (ImPlot::BeginPlot("##Rolling", ImVec2(-1,ImGui::GetTextLineHeight()*10))) {
+        //         ImPlot::SetupAxes(nullptr, nullptr, flags, flags);
+        //         ImPlot::SetupAxisLimits(ImAxis_X1,0,history, ImGuiCond_Always);
+        //         ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
+        //         ImPlot::PlotLine("Mouse X", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
+        //         ImPlot::PlotLine("Mouse Y", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
+        //         ImPlot::EndPlot();
+        //     }
+            
+        //     ImGui::End();
+        // }
