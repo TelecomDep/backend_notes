@@ -54,3 +54,5 @@ target_compile_options(implot PRIVATE -fPIC)
 add_executable(main ${SRC_DIR}/main.cpp)
 target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
 
+add_executable(tails ${SRC_DIR}/tile_catcher.cpp)
+target_link_libraries(tails PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
