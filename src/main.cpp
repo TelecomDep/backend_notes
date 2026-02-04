@@ -59,17 +59,57 @@ void run_gui(){
 
         //1. 
         {
+            ImGui::SetNextWindowSize(ImVec2(686,416));
             static int counter = 0;
 
             ImGui::Begin("Hello, world!");
             if (ImGui::Button("Button"))
                 counter++;
             ImGui::Text("counter = %d", counter);
-            // ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
             ImGui::End();
         }
+        {
+            static int counter = 0;
+            if (ImGui::Button("Button")){
+                counter++;
+                // можно что угодно добавить при нажатии на кнопку
+            }                        
+            ImGui::Text("counter = %d", counter);
 
+            ImGui::Button("change me", ImVec2(91,59));
+        }
+
+        // // Default color style
+        // {
+        //     ImGui::Begin("Color theme");
+
+        //     static int style_idx = 0;
+
+        //     if (ImGui::Button("Light"))
+        //         style_idx = 1;
+        //     if (ImGui::Button("Dark"))
+        //         style_idx = 0;
+        //     if (ImGui::Button("Classic"))
+        //         style_idx = 2;
+
+        //     switch (style_idx)
+        //     {
+        //         case 0: ImGui::StyleColorsDark(); break;
+        //         case 1: ImGui::StyleColorsLight(); break;
+        //         case 2: ImGui::StyleColorsClassic(); break;
+        //     }
+
+        //     ImGui::End();
+        // }
+           
         // ImGui::ShowDemoWindow();
+
+        ImGui::Begin("Simple Plot");
+        static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
+        ImGui::PlotLines("Frame Times", arr, IM_COUNTOF(arr));
+        ImGui::End();
         // ImPlot::ShowDemoWindow();
         // ImGui::Begin("Mouse Position");
         // ImVec2 mouse = ImGui::GetMousePos();
@@ -78,15 +118,16 @@ void run_gui(){
 
         // {
         //     ImGui::Begin("My Plot!");
-        //     double data_x[1000];
-        //     double data_y[1000];
-        //     for (int i = 0; i < 1000; i++){
+        //     int N = 500;
+        //     double data_x[N];
+        //     double data_y[N];
+        //     for (int i = 0; i < N; i++){
         //         data_x[i] = RandomRange(400.0,450.0);
         //         data_y[i] = RandomRange(100.0,150.0);
         //     }
         //     if(ImPlot::BeginPlot("##Scrolling"))
         //     {
-        //         ImPlot::PlotScatter("Mouse X", &data_x[0], &data_y[0], 1000, 0, 0, 2 * sizeof(float));
+        //         ImPlot::PlotScatter("Mouse X", &data_x[0], &data_y[0], N, 0, 0, 2 * sizeof(float));
         //         ImPlot::EndPlot();
         //     }
         

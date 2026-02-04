@@ -1,0 +1,14 @@
+{
+	"files": [
+		{
+			"path": "third_party/imgui/imgui_demo.cpp",
+			"bookmarks": [
+				{
+					"line": 8637,
+					"column": 52,
+					"label": "Цветовые схемы для всех элементов окна"
+				}
+			]
+		}
+	]
+}
