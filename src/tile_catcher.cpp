@@ -24,6 +24,7 @@ size_t onPullResponse(void *data, size_t size, size_t nmemb,
   auto &blob{*static_cast<std::vector<std::byte> *>(userp)};
   auto const *const dataptr{static_cast<std::byte *>(data)};
   blob.insert(blob.cend(), dataptr, dataptr + realsize);
+  std::cout << "tile size = " << realsize << std::endl;
   return realsize;
 }
 
@@ -44,7 +45,7 @@ bool receiveTile(int z, int x, int y,
   return ok;
 }
 
-void onHandleRequest(int z, int x, int y) {
+std::vector<std::byte> onHandleRequest(int z, int x, int y) {
   std::vector<std::byte> blob;
   if (receiveTile(z, x, y, blob)) {
       std::cout << "tile is received" << std::endl;
@@ -53,11 +54,11 @@ void onHandleRequest(int z, int x, int y) {
     std::cout << "tile is not received" << std::endl;
     // тут Dummy байтики
   }
-//   return data;
+   return blob;
 }
 
 int main(){
 
-  onHandleRequest(10, 20, 13);
+  onHandleRequest(10, 20, 10);
   return 0;
 }
