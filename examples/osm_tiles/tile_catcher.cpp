@@ -1,23 +1,22 @@
 #include <sstream>
-#include <curl/curl.h>
+#include <iostream>
+#include <chrono>
+#include <cmath>
 #include <vector>
 #include <future>
 #include <memory>
-#include <iostream>
 
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
-
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include <cmath>
+#include <stb_image.h>
+#include <curl/curl.h>
 
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "imgui.h"
 #include "implot.h"
-#include <stb_image.h>
+
+#include "tile_catcher.h"
 
 
 
@@ -92,7 +91,7 @@ bool receiveTile(int z, int x, int y,
   return ok;
 }
 
-std::vector<std::byte> onHandleRequest(int z, int x, int y) {
+std::vector<std::byte> tileRequest(int z, int x, int y) {
   std::vector<std::byte> blob;
   if (receiveTile(z, x, y, blob)) {
       std::cout << "tile is received" << std::endl;
@@ -152,12 +151,14 @@ int main(){
         ImVec2 bmin{0, 0};
         ImVec2 bmax{256, 256};
         if(!loaded){
-          _rawBlob = onHandleRequest(18, 232798, 103246);
+          _rawBlob = tileRequest(2, 2, 1);
+          stbLoad();
+          glLoad();
+          std::cout << "raw blob size = " << _rawBlob.size() << std::endl;
+          std::cout << "rgb blob size = " << _rgbaBlob.size() << std::endl;
         }
         if (loaded)
         {
-          stbLoad();
-          glLoad();
           ImPlot::PlotImage("##", _id, bmin, bmax, _uv0, _uv1, _tint);
         }
 

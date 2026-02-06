@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(THIRD_PARTY_DIR ${PROJECT_SOURCE_DIR}/third_party)
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(EXAMPLES_DIR ${PROJECT_SOURCE_DIR}/examples)
 
 # SDL2
 find_package(SDL2 REQUIRED)
@@ -57,6 +58,6 @@ target_compile_options(implot PRIVATE -fPIC)
 add_executable(main ${SRC_DIR}/main.cpp)
 target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
 
-add_executable(tile ${SRC_DIR}/tile_catcher.cpp)
+add_executable(tile ${EXAMPLES_DIR}/osm_tiles/tile_catcher.cpp)
 target_link_libraries(tile PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${STB_LIBRARIES})
 target_include_directories(tile PRIVATE ${STB_INCLUDE_DIRS})
