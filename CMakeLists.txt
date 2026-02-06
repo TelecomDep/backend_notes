@@ -15,6 +15,9 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 
+include(FindPkgConfig)
+pkg_check_modules(STB REQUIRED stb)
+
 include_directories(${INCLUDE_DIR})
 
 
@@ -54,5 +57,6 @@ target_compile_options(implot PRIVATE -fPIC)
 add_executable(main ${SRC_DIR}/main.cpp)
 target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
 
-add_executable(tails ${SRC_DIR}/tile_catcher.cpp)
-target_link_libraries(tails PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
+add_executable(tile ${SRC_DIR}/tile_catcher.cpp)
+target_link_libraries(tile PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${STB_LIBRARIES})
+target_include_directories(tile PRIVATE ${STB_INCLUDE_DIRS})
