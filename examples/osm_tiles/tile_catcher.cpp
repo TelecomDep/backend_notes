@@ -1,10 +1,12 @@
 #include <sstream>
 #include <iostream>
 #include <chrono>
-#include <cmath>
 #include <vector>
 #include <future>
 #include <memory>
+#include <math.h>
+#include <numbers>
+#include <algorithm>
 
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
@@ -16,13 +18,66 @@
 #include "imgui.h"
 #include "implot.h"
 
-#include "tile_catcher.h"
-
 
 
 // struct FutureData {
 //     std::shared_ptr<ITile> tile;
 // };
+
+static const ImPlotAxisFlags _xFlags{
+    ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoGridLines |
+    ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels |
+    ImPlotAxisFlags_NoInitialFit | ImPlotAxisFlags_NoMenus |
+    ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_NoHighlight};
+
+static const ImPlotAxisFlags _yFlags{_xFlags |
+                                                ImPlotAxisFlags_Invert};
+
+double PI{std::numbers::pi_v<double>};
+double PI2{std::numbers::pi_v<double> * 2.0};
+double RAD{std::numbers::pi_v<double> / 180.0};
+double DEG{180.0 / std::numbers::pi_v<double>};
+
+int POW2[]{
+    (1 << 0),  (1 << 1),  (1 << 2),  (1 << 3),  (1 << 4),  (1 << 5),  (1 << 6),
+    (1 << 7),  (1 << 8),  (1 << 9),  (1 << 10), (1 << 11), (1 << 12), (1 << 13),
+    (1 << 14), (1 << 15), (1 << 16), (1 << 17), (1 << 18)};
+
+
+double lon2x(const double lon, int z = 0) {
+  return (lon + 180.0) / 360.0 * double(POW2[z]);
+}
+
+double lat2y(const double lat, int z = 0) {
+  return (1.0 - asinh(tan(lat * RAD)) / PI) / 2.0 * double(POW2[z]);
+}
+
+double x2lon(const double x, int z = 0) {
+  return x / double(POW2[z]) * 360.0 - 180.0;
+}
+
+double y2lat(const double y, const int z = 0) {
+  const double n{PI - PI2 * y / double(POW2[z])};
+  return DEG * atan(0.5 * (exp(n) - exp(-n)));
+}
+
+
+double _minLat{-85.0};
+double _maxLat{+85.0};
+double _minLon{-179.9};
+double _maxLon{+179.9};
+int MinZoom{0};
+int MaxZoom{18};
+
+
+double _minX = lon2x(_minLon, 0);
+double _maxX = lon2x(_maxLon, 0);
+double _minY = lat2y(_minLat, 0);
+double _maxY = lat2y(_maxLat, 0);
+
+ImPlotPoint _mousePos{};
+ImPlotRect _plotLims{};
+ImVec2 _plotSize{};
 
 int _width{256}, _height{256}, _channels{};
 std::vector<std::byte> _rawBlob;
@@ -146,11 +201,30 @@ int main(){
 
         //18/232798/103246.png
         ImPlot::BeginPlot("##ImOsmMapPlot");
+        // ImPlot::SetupAxis(ImAxis_X1, nullptr, _xFlags);
+        // ImPlot::SetupAxis(ImAxis_Y1, nullptr, _yFlags);
+        // ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, 0.0, 1.0);
+        
+        ImPlot::SetupAxisLimits(ImAxis_X1, _minX, _maxX, ImPlotCond_Always);
+        ImPlot::SetupAxisLimits(ImAxis_Y1, _minY, _maxY, ImPlotCond_Always);
+        if(!loaded){
+          std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
+          std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
+        }
         ImVec2 _uv0{0, 1}, _uv1{1, 0};
         ImVec4 _tint{1, 1, 1, 1};
         ImVec2 bmin{0, 0};
         ImVec2 bmax{256, 256};
         if(!loaded){
+          _mousePos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
+          _plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
+          _plotSize = ImPlot::GetPlotSize();
+          _minX = _plotLims.X.Min;
+          _maxX = _plotLims.X.Max;
+          _minY = _plotLims.Y.Min;
+          _maxY = _plotLims.Y.Max;
+          std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
+          std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
           _rawBlob = tileRequest(2, 2, 1);
           stbLoad();
           glLoad();
