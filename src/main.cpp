@@ -11,15 +11,11 @@
 #include "imgui.h"
 #include "implot.h"
 
-template <typename T>
-inline T RandomRange(T min, T max) {
-    T scale = rand() / (T) RAND_MAX;
-    return min + scale * ( max - min );
-}
 
+bool running = true;
 
-
-void run_gui(){
+void run_gui()
+{
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
     SDL_Window* window = SDL_CreateWindow(
         "Backend start", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -37,14 +33,13 @@ void run_gui(){
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    bool running = true;
     // auto last_frame_time = std::chrono::steady_clock::now();
     while (running) {
 
         // Обработка event'ов (inputs, window resize, mouse moving, etc.)
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            std::cout << "Processing some event: "<< event.type << " timestamp: " << event.motion.timestamp << std::endl;
+            // std::cout << "Processing some event: "<< event.type << " timestamp: " << event.motion.timestamp << std::endl;
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT) {
                 running = false;
@@ -58,28 +53,28 @@ void run_gui(){
         ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_None);
 
         //1. 
-        {
-            ImGui::SetNextWindowSize(ImVec2(686,416));
-            static int counter = 0;
+        // {
+        //     ImGui::SetNextWindowSize(ImVec2(686,416));
+        //     static int counter = 0;
 
-            ImGui::Begin("Hello, world!");
-            if (ImGui::Button("Button"))
-                counter++;
-            ImGui::Text("counter = %d", counter);
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-            ImGui::End();
-        }
-        {
-            static int counter = 0;
-            if (ImGui::Button("Button")){
-                counter++;
-                // можно что угодно добавить при нажатии на кнопку
-            }                        
-            ImGui::Text("counter = %d", counter);
+        //     ImGui::Begin("Hello, world!");
+        //     if (ImGui::Button("Button"))
+        //         counter++;
+        //     ImGui::Text("counter = %d", counter);
+        //     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        //     ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+        //     ImGui::End();
+        // }
+        // {
+        //     static int counter = 0;
+        //     if (ImGui::Button("Button")){
+        //         counter++;
+        //         // можно что угодно добавить при нажатии на кнопку
+        //     }                        
+        //     ImGui::Text("counter = %d", counter);
 
-            ImGui::Button("change me", ImVec2(91,59));
-        }
+        //     ImGui::Button("change me", ImVec2(91,59));
+        // }
 
         // // Default color style
         // {
@@ -106,33 +101,15 @@ void run_gui(){
            
         // ImGui::ShowDemoWindow();
 
-        ImGui::Begin("Simple Plot");
-        static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
-        ImGui::PlotLines("Frame Times", arr, IM_COUNTOF(arr));
-        ImGui::End();
+        // ImGui::Begin("Simple Plot");
+        // static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
+        // ImGui::PlotLines("Frame Times", arr, IM_COUNTOF(arr));
+        // ImGui::End();
         // ImPlot::ShowDemoWindow();
         // ImGui::Begin("Mouse Position");
         // ImVec2 mouse = ImGui::GetMousePos();
         // ImGui::Text("Mouse position: x = %f, y = %f", mouse.x, mouse.y);
         // ImGui::End();
-
-        // {
-        //     ImGui::Begin("My Plot!");
-        //     int N = 500;
-        //     double data_x[N];
-        //     double data_y[N];
-        //     for (int i = 0; i < N; i++){
-        //         data_x[i] = RandomRange(400.0,450.0);
-        //         data_y[i] = RandomRange(100.0,150.0);
-        //     }
-        //     if(ImPlot::BeginPlot("##Scrolling"))
-        //     {
-        //         ImPlot::PlotScatter("Mouse X", &data_x[0], &data_y[0], N, 0, 0, 2 * sizeof(float));
-        //         ImPlot::EndPlot();
-        //     }
-        
-        //     ImGui::End();
-        // }
 
 
         ImGui::Render();
@@ -152,10 +129,10 @@ void run_gui(){
     SDL_Quit();
 }
 
-
 int main(int argc, char *argv[]) {
 
     std::thread gui_thread(run_gui);
+
     gui_thread.join();
     return 0;
 }

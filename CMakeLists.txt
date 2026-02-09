@@ -61,3 +61,6 @@ target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRA
 add_executable(tile ${EXAMPLES_DIR}/osm_tiles/tile_catcher.cpp)
 target_link_libraries(tile PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${STB_LIBRARIES})
 target_include_directories(tile PRIVATE ${STB_INCLUDE_DIRS})
+
+add_executable(sdr_samples_update ${EXAMPLES_DIR}/samples_update_thread/test_samples_update.cpp)
+target_link_libraries(sdr_samples_update PRIVATE imgui implot  ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
