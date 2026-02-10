@@ -67,8 +67,11 @@ void run_gui(sdr_entity *sdr)
 
         // Отображаем на графике сэмплы
         {
+            ImVec2 plotSize(500, 600);
             ImGui::Begin("Test for I/Q samples update in Scatter plot");
-            if(ImPlot::BeginPlot("I/Q"))
+            ImVec2 win_size = ImGui::GetWindowSize();
+            ImGui::Text("Window size equal to: %f x %f", win_size.x, win_size.y);
+            if(ImPlot::BeginPlot("I/Q", plotSize))
             {
                 ImPlot::PlotScatter("Samples", sdr->i, sdr->q, BUFFER_SIZE);
                 ImPlot::EndPlot();
@@ -97,6 +100,7 @@ void run_gui(sdr_entity *sdr)
 
 void update_samples(sdr_entity *sdr)
 {
+
     while(running){
         for (int i = 0; i < BUFFER_SIZE; i++){
             sdr->i[i] = RandomRange(-2047.0, 2047.0);
