@@ -8,6 +8,9 @@ set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(EXAMPLES_DIR ${PROJECT_SOURCE_DIR}/examples)
 
+#PSQL
+find_package(PostgreSQL REQUIRED)
+
 # SDL2
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
@@ -56,7 +59,7 @@ target_compile_options(implot PRIVATE -fPIC)
 
 
 add_executable(main ${SRC_DIR}/main.cpp)
-target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
+target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} PostgreSQL::PostgreSQL)
 
 add_executable(tile ${EXAMPLES_DIR}/osm_tiles/tile_catcher.cpp)
 target_link_libraries(tile PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${STB_LIBRARIES})
@@ -64,3 +67,6 @@ target_include_directories(tile PRIVATE ${STB_INCLUDE_DIRS})
 
 add_executable(sdr_samples_update ${EXAMPLES_DIR}/samples_update_thread/test_samples_update.cpp)
 target_link_libraries(sdr_samples_update PRIVATE imgui implot  ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
+
+add_executable(psql_example ${EXAMPLES_DIR}/psql/psql_example.cpp)
+target_link_libraries(psql_example PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} PostgreSQL::PostgreSQL)

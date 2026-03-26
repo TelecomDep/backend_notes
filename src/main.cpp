@@ -10,6 +10,7 @@
 #include "backends/imgui_impl_sdl2.h"
 #include "imgui.h"
 #include "implot.h"
+#include "imgui_internal.h"
 
 
 bool running = true;
@@ -50,21 +51,46 @@ void run_gui()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
-        ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_None);
+        // ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_None);
+        // ImGui::DockSpaceOverViewport();
+        // ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGuiID dockspace_id = ImGui::GetID("My Dockspace");
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+        // Create settings
+        if (ImGui::DockBuilderGetNode(dockspace_id) == nullptr)
+        {
+            ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+            ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
+            ImGuiID dock_id_left = 0;
+            ImGuiID dock_id_main = dockspace_id;
+            ImGui::DockBuilderSplitNode(dock_id_main, ImGuiDir_Left, 0.20f, &dock_id_left, &dock_id_main);
+            ImGuiID dock_id_left_top = 0;
+            ImGuiID dock_id_left_bottom = 0;
+            ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Up, 0.50f, &dock_id_left_top, &dock_id_left_bottom);
+            ImGui::DockBuilderDockWindow("Main", dock_id_main);
+            ImGui::DockBuilderDockWindow("Properties", dock_id_left_top);
+            ImGui::DockBuilderDockWindow("Scene", dock_id_left_bottom);
+            ImGui::DockBuilderFinish(dockspace_id);
+        }
+        ImGui::DockSpaceOverViewport(dockspace_id, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
         //1. 
-        // {
-        //     ImGui::SetNextWindowSize(ImVec2(686,416));
-        //     static int counter = 0;
+        {
+            // ImGui::SetNextWindowSize(ImVec2(686,416));
+            static int counter = 0;
 
-        //     ImGui::Begin("Hello, world!");
-        //     if (ImGui::Button("Button"))
-        //         counter++;
-        //     ImGui::Text("counter = %d", counter);
-        //     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        //     ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-        //     ImGui::End();
-        // }
+            ImGui::Begin("Properties");
+            if (ImGui::Button("Button"))
+                counter++;
+
+            for (int i = 0; i < 10; i++){
+                ImGui::Text("counter = %d", counter);
+            }
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+            ImGui::End();
+        }
         // {
         //     static int counter = 0;
         //     if (ImGui::Button("Button")){
@@ -98,7 +124,14 @@ void run_gui()
 
         //     ImGui::End();
         // }
-           
+        if(ImGui::BeginMainMenuBar()){
+            if (ImGui::BeginMenu("File"))
+            {
+                
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
         // ImGui::ShowDemoWindow();
 
         // ImGui::Begin("Simple Plot");

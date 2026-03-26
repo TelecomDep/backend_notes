@@ -205,8 +205,8 @@ int main(){
         // ImPlot::SetupAxis(ImAxis_Y1, nullptr, _yFlags);
         // ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, 0.0, 1.0);
         
-        ImPlot::SetupAxisLimits(ImAxis_X1, _minX, _maxX, ImPlotCond_Always);
-        ImPlot::SetupAxisLimits(ImAxis_Y1, _minY, _maxY, ImPlotCond_Always);
+        // ImPlot::SetupAxisLimits(ImAxis_X1, _minX, _maxX, ImPlotCond_Always);
+        // ImPlot::SetupAxisLimits(ImAxis_Y1, _minY, _maxY, ImPlotCond_Always);
         if(!loaded){
           std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
           std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
@@ -216,16 +216,16 @@ int main(){
         ImVec2 bmin{0, 0};
         ImVec2 bmax{256, 256};
         if(!loaded){
-          _mousePos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
-          _plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
-          _plotSize = ImPlot::GetPlotSize();
-          _minX = _plotLims.X.Min;
-          _maxX = _plotLims.X.Max;
-          _minY = _plotLims.Y.Min;
-          _maxY = _plotLims.Y.Max;
+          // _mousePos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
+          // _plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
+          // _plotSize = ImPlot::GetPlotSize();
+          // _minX = _plotLims.X.Min;
+          // _maxX = _plotLims.X.Max;
+          // _minY = _plotLims.Y.Min;
+          // _maxY = _plotLims.Y.Max;
           std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
           std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
-          _rawBlob = tileRequest(2, 2, 1);
+          _rawBlob = tileRequest(18, 232798, 103246);
           stbLoad();
           glLoad();
           std::cout << "raw blob size = " << _rawBlob.size() << std::endl;

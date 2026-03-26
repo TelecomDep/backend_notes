@@ -2,7 +2,7 @@
 
 Зависимости:
 ```bash
-sudo apt install libsdl2-dev libgl1-mesa-dev libglew-dev
+sudo apt install libsdl2-dev libgl1-mesa-dev libglew-dev libpq-dev
 ```
 
 Клонируем:
