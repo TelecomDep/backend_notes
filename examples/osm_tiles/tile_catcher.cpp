@@ -80,9 +80,10 @@ ImPlotRect _plotLims{};
 ImVec2 _plotSize{};
 
 int _width{256}, _height{256}, _channels{};
-std::vector<std::byte> _rawBlob;
-std::vector<std::byte> _rgbaBlob;
+std::vector<unsigned char> _rawBlob;
+unsigned char *data;
 GLuint _id{0};
+
 bool loaded = false;
 
 void glLoad(){
@@ -92,23 +93,11 @@ void glLoad(){
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, _rgbaBlob.data());
+                GL_UNSIGNED_BYTE, data);
 }
 
 void stbLoad() {
-  stbi_set_flip_vertically_on_load(false);
-  const auto ptr{
-      stbi_load_from_memory(reinterpret_cast<stbi_uc const *>(_rawBlob.data()),
-                            static_cast<int>(_rawBlob.size()), &_width, &_height,
-                            &_channels, STBI_rgb_alpha)};
-  if (ptr) {
-    const size_t nbytes{size_t(_width * _height * STBI_rgb_alpha)};
-    _rgbaBlob.resize(nbytes);
-    _rgbaBlob.shrink_to_fit();
-    const auto byteptr{reinterpret_cast<std::byte *>(ptr)};
-    _rgbaBlob.insert(_rgbaBlob.begin(), byteptr, byteptr + nbytes);
-    stbi_image_free(ptr);
-  }
+  data = stbi_load_from_memory(_rawBlob.data(), _rawBlob.size(), &_width, &_height, &_channels, STBI_rgb_alpha);
 }
 
 
@@ -122,15 +111,15 @@ std::string makeUrl(int z, int x, int y) {
 size_t onPullResponse(void *data, size_t size, size_t nmemb,
                                      void *userp) {
   size_t realsize{size * nmemb};
-  auto &blob{*static_cast<std::vector<std::byte> *>(userp)};
-  auto const *const dataptr{static_cast<std::byte *>(data)};
+  auto &blob{*static_cast<std::vector<unsigned char> *>(userp)};
+  auto const *const dataptr{static_cast<unsigned char *>(data)};
   blob.insert(blob.cend(), dataptr, dataptr + realsize);
   std::cout << "tile size = " << realsize << std::endl;
   return realsize;
 }
 
 bool receiveTile(int z, int x, int y,
-                                std::vector<std::byte> &blob) {
+                                std::vector<unsigned char> &blob) {
   CURL *curl{curl_easy_init()};
   curl_easy_setopt(curl, CURLOPT_URL, makeUrl(z, x, y).c_str());
   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
@@ -146,8 +135,8 @@ bool receiveTile(int z, int x, int y,
   return ok;
 }
 
-std::vector<std::byte> tileRequest(int z, int x, int y) {
-  std::vector<std::byte> blob;
+std::vector<unsigned char> tileRequest(int z, int x, int y) {
+  std::vector<unsigned char> blob;
   if (receiveTile(z, x, y, blob)) {
       std::cout << "tile is received" << std::endl;
       // тут в blob лежат байтики после получения тайлов
@@ -199,37 +188,26 @@ int main(){
         
 
 
-        //18/232798/103246.png
         ImPlot::BeginPlot("##ImOsmMapPlot");
-        // ImPlot::SetupAxis(ImAxis_X1, nullptr, _xFlags);
-        // ImPlot::SetupAxis(ImAxis_Y1, nullptr, _yFlags);
-        // ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, 0.0, 1.0);
-        
-        // ImPlot::SetupAxisLimits(ImAxis_X1, _minX, _maxX, ImPlotCond_Always);
-        // ImPlot::SetupAxisLimits(ImAxis_Y1, _minY, _maxY, ImPlotCond_Always);
+
         if(!loaded){
           std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
           std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
         }
+        // Top-left of the texture
+        // Bottom-right of the texture
         ImVec2 _uv0{0, 1}, _uv1{1, 0};
         ImVec4 _tint{1, 1, 1, 1};
         ImVec2 bmin{0, 0};
         ImVec2 bmax{256, 256};
         if(!loaded){
-          // _mousePos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
-          // _plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
-          // _plotSize = ImPlot::GetPlotSize();
-          // _minX = _plotLims.X.Min;
-          // _maxX = _plotLims.X.Max;
-          // _minY = _plotLims.Y.Min;
-          // _maxY = _plotLims.Y.Max;
+
           std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
           std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
-          _rawBlob = tileRequest(18, 232798, 103246);
+          _rawBlob = tileRequest(16, 47867, 20726);
+      
           stbLoad();
           glLoad();
-          std::cout << "raw blob size = " << _rawBlob.size() << std::endl;
-          std::cout << "rgb blob size = " << _rgbaBlob.size() << std::endl;
         }
         if (loaded)
         {
