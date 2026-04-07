@@ -23,6 +23,9 @@ include(FindPkgConfig)
 pkg_check_modules(STB REQUIRED stb)
 
 include_directories(${INCLUDE_DIR})
+include_directories(${INCLUDE_DIR}/gui)
+include_directories(${INCLUDE_DIR}/psql)
+include_directories(${INCLUDE_DIR}/tiles)
 
 
 # Проверка на дурака, установили ли библиотеки 
@@ -58,8 +61,11 @@ target_link_libraries(implot PRIVATE imgui)
 target_compile_options(implot PRIVATE -fPIC)
 
 
-add_executable(main ${SRC_DIR}/main.cpp)
-target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} PostgreSQL::PostgreSQL)
+add_executable(main ${SRC_DIR}/main.cpp
+                    ${SRC_DIR}/gui/gui_interface.cpp)
+                    
+target_link_libraries(main PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} PostgreSQL::PostgreSQL ${STB_LIBRARIES})
+target_include_directories(main PRIVATE ${STB_INCLUDE_DIRS})
 
 add_executable(tile ${EXAMPLES_DIR}/osm_tiles/tile_catcher.cpp)
 target_link_libraries(tile PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${STB_LIBRARIES})
