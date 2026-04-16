@@ -1,3 +1,5 @@
+#include "gui_interface.h"
+
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 
@@ -5,6 +7,10 @@
 #include <chrono>
 #include <thread>
 #include <cmath>
+#include <algorithm>
+#include <future>
+#include <memory>
+#include <sstream>
 
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl2.h"
@@ -12,8 +18,143 @@
 #include "implot.h"
 #include "imgui_internal.h"
 
-#include "gui_interface.h"
+#include "tile_catcher.h"
 
+
+
+
+void properties_window(gui_runner_t *gui_runner)
+{
+    static int counter = 0;
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::Begin("Properties");
+    if (ImGui::Button("Button"))
+        counter++;
+    ImGui::Text("counter = %d", counter);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+    ImGui::End();
+}
+
+
+GLuint tileAt(int z, int x, int y, gui_runner_t *gui_runner){
+    
+    const auto& it = std::find(gui_runner->tiles.begin(), gui_runner->tiles.end(),
+                          tiles_t{std::array<int, 3>{z, x, y}});
+    bool is_loaded = false;
+    int index = 0;
+    for (int i = 0; i < gui_runner->tiles.size(); i++)
+    {
+        if(gui_runner->tiles[i].zxy[0] == z && gui_runner->tiles[i].zxy[1] == x && gui_runner->tiles[i].zxy[2] == y){
+            is_loaded = true;
+            index = i;
+            break;
+        }
+    }
+    if(is_loaded){
+        if(gui_runner->tiles[index].is_loaded){
+            if(gui_runner->tiles[index]._id == 0){
+                stbLoad(&gui_runner->tiles[index]);
+                glLoad(&gui_runner->tiles[index]);
+            }
+            return gui_runner->tiles[index]._id;
+        }
+    } else {
+         gui_runner->tiles.push_back(tileRequest(z, x, y));
+    }
+    return 0;
+}
+
+void plot_osm_map(gui_runner_t *gui_runner)
+{
+    // Получаем размер окна с графиком в пикселях
+    ImVec2 win_size = ImGui::GetWindowSize();
+
+    // Считаем сколько картинок необходимо, чтобы заполнить весь виджет тайлами.
+    int nof_x_tiles = std::floor(win_size.x / gui_runner->tile_size);
+    int nof_y_tiles = std::floor(win_size.y / gui_runner->tile_size);
+
+    // Выбираем центр на карте, чтобы от нее начинать считать тайлы
+    double lat_center = 55.013266;
+    double lon_center = 82.950782;
+    double delta_lla = 0.1;
+    int zoom = gui_runner->zoom;
+
+    // Выставляем границы графика по осям X, Y.
+    ImPlot::SetNextAxesLimits(  lon_center - delta_lla, lon_center + delta_lla, 
+                                lat_center - delta_lla, lat_center + delta_lla, ImPlotCond_Once);
+    ImPlot::BeginPlot("##ImOsmMapPlot", {-1, -1}); // size = {-1, -1} - растянет на весь виджет
+    ImPlotRect axisLimits = ImPlot::GetPlotLimits();
+
+    // Находим границы номеров тайлов.
+    int minX = lon2x(axisLimits.X.Min, zoom);
+    int maxX = lon2x(axisLimits.X.Max, zoom);
+    int minY = lat2y(axisLimits.Y.Max, zoom); // Здесь намерено Min Max поменяли местами. См. нумерацию тайлов.
+    int maxY = lat2y(axisLimits.Y.Min, zoom); // Здесь намерено Min Max поменяли местами. См. нумерацию тайлов.
+    
+    for (int x = minX; x <= maxX; x++)
+    {
+        for (int y = minY; y <= maxY; y++)
+        {
+                ImVec2 uv0{0, 0};
+                ImVec2 uv1{1, 1};
+                ImVec4 tint{1, 1, 1, 1};
+                ImPlotPoint bmin{x2lon(x, zoom), y2lat(y + 1, zoom)};
+                ImPlotPoint bmax{x2lon(x + 1, zoom), y2lat(y, zoom)};
+                ImPlot::PlotImage("##tile_", (ImTextureID)(intptr_t)tileAt(zoom, x, y, gui_runner), bmin, bmax, uv0, uv1, tint);
+        }
+    }
+
+    ImPlot::EndPlot();
+}
+
+void main_window(gui_runner_t *gui_runner)
+{
+    ImGui::Begin("Main", nullptr, ImGuiWindowFlags_MenuBar);
+    if (ImGui::BeginTabBar("Main")) {
+        if (ImGui::BeginTabItem("Info")) {
+            
+
+
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Custom Map")) {
+
+            plot_osm_map(gui_runner);
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
+}
+
+void bottom_status_bar(gui_runner_t *gui_runner)
+{
+    if (ImGui::BeginViewportSideBar(    "##MainStatusBar", ImGui::GetMainViewport(), 
+                                        ImGuiDir_Down, ImGui::GetFrameHeight(), 
+                                        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | 
+                                        ImGuiWindowFlags_MenuBar)) {
+        if (ImGui::BeginMenuBar()) {
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
+            ImGui::Text("Frame Rate: %.3f [ms/frame] (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::EndMenuBar();
+        }
+        ImGui::End();
+    }
+}
+
+void main_menu(gui_runner_t *gui_runner)
+{
+    if(ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+}
 
 void run_gui(gui_runner_t *gui_runner)
 {
@@ -78,32 +219,11 @@ void run_gui(gui_runner_t *gui_runner)
         }
         ImGui::DockSpaceOverViewport(dockspace_id, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
-        //1. 
-        {
-            // ImGui::SetNextWindowSize(ImVec2(686,416));
-            static int counter = 0;
-
-            ImGui::Begin("Properties");
-            if (ImGui::Button("Button"))
-                counter++;
-
-            for (int i = 0; i < 10; i++){
-                ImGui::Text("counter = %d", counter);
-            }
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-            ImGui::End();
-        }
-
-        if(ImGui::BeginMainMenuBar()){
-            if (ImGui::BeginMenu("File"))
-            {
-                
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-
+        
+        main_menu(gui_runner);
+        properties_window(gui_runner);
+        main_window(gui_runner);
+        bottom_status_bar(gui_runner);
 
         ImGui::Render();
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
