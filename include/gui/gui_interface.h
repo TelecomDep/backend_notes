@@ -9,6 +9,14 @@ typedef struct gui_runner_s{
     std::vector<tiles_t>    tiles;      // Работа с тайлами
 } gui_runner_t;
 
+
+// Основной поток работы ImGUI
 void run_gui(gui_runner_t *gui_runner);
+
+// Функции отображения разных элементов
+void main_menu(gui_runner_t *gui_runner);
+void properties_window(gui_runner_t *gui_runner);
+void main_window(gui_runner_t *gui_runner);
+void bottom_status_bar(gui_runner_t *gui_runner);
 
 #endif

@@ -15,6 +15,67 @@
 #include "gui_interface.h"
 
 
+
+void properties_window(gui_runner_t *gui_runner)
+{
+    static int counter = 0;
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::Begin("Properties");
+    if (ImGui::Button("Button"))
+        counter++;
+    ImGui::Text("counter = %d", counter);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+    ImGui::End();
+}
+
+void main_window(gui_runner_t *gui_runner)
+{
+    ImGui::Begin("Main", nullptr, ImGuiWindowFlags_MenuBar);
+    if (ImGui::BeginTabBar("Main")) {
+        if (ImGui::BeginTabItem("Info")) {
+            
+
+
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Custom Map")) {
+            
+            
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
+}
+
+void bottom_status_bar(gui_runner_t *gui_runner)
+{
+    if (ImGui::BeginViewportSideBar(    "##MainStatusBar", ImGui::GetMainViewport(), 
+                                        ImGuiDir_Down, ImGui::GetFrameHeight(), 
+                                        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | 
+                                        ImGuiWindowFlags_MenuBar)) {
+        if (ImGui::BeginMenuBar()) {
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
+            ImGui::Text("Frame Rate: %.3f [ms/frame] (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::EndMenuBar();
+        }
+        ImGui::End();
+    }
+}
+
+void main_menu(gui_runner_t *gui_runner)
+{
+    if(ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+}
+
 void run_gui(gui_runner_t *gui_runner)
 {
 
@@ -78,32 +139,11 @@ void run_gui(gui_runner_t *gui_runner)
         }
         ImGui::DockSpaceOverViewport(dockspace_id, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
-        //1. 
-        {
-            // ImGui::SetNextWindowSize(ImVec2(686,416));
-            static int counter = 0;
-
-            ImGui::Begin("Properties");
-            if (ImGui::Button("Button"))
-                counter++;
-
-            for (int i = 0; i < 10; i++){
-                ImGui::Text("counter = %d", counter);
-            }
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-            ImGui::End();
-        }
-
-        if(ImGui::BeginMainMenuBar()){
-            if (ImGui::BeginMenu("File"))
-            {
-                
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-
+        
+        main_menu(gui_runner);
+        properties_window(gui_runner);
+        main_window(gui_runner);
+        bottom_status_bar(gui_runner);
 
         ImGui::Render();
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
