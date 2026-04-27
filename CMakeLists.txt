@@ -61,12 +61,7 @@ target_link_libraries(implot PRIVATE imgui)
 target_compile_options(implot PRIVATE -fPIC)
 
 
-add_executable(main ${SRC_DIR}/main.cpp
-                    ${SRC_DIR}/gui/gui_interface.cpp)
-                    
-target_link_libraries(main PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} PostgreSQL::PostgreSQL ${STB_LIBRARIES})
-target_include_directories(main PRIVATE ${STB_INCLUDE_DIRS})
-
+# Examples
 add_executable(tile ${EXAMPLES_DIR}/osm_tiles/tile_catcher.cpp)
 target_link_libraries(tile PRIVATE imgui implot curl ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${STB_LIBRARIES})
 target_include_directories(tile PRIVATE ${STB_INCLUDE_DIRS})
@@ -76,3 +71,20 @@ target_link_libraries(sdr_samples_update PRIVATE imgui implot  ${SDL2_LIBRARIES}
 
 add_executable(psql_example ${EXAMPLES_DIR}/psql/psql_example.cpp)
 target_link_libraries(psql_example PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} PostgreSQL::PostgreSQL)
+
+
+# Main
+
+add_executable(main ${SRC_DIR}/main.cpp
+                    ${SRC_DIR}/gui/gui_interface.cpp
+                    ${SRC_DIR}/tiles/tile_catcher.cpp)
+
+# Imgui + deps
+target_link_libraries(main PRIVATE imgui implot ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
+
+# Curl + STB-image
+target_link_libraries(main PRIVATE  curl ${STB_LIBRARIES})
+
+# Psql
+target_link_libraries(main PRIVATE  PostgreSQL::PostgreSQL)
+target_include_directories(main PRIVATE ${STB_INCLUDE_DIRS})

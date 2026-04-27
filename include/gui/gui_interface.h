@@ -19,4 +19,6 @@ void properties_window(gui_runner_t *gui_runner);
 void main_window(gui_runner_t *gui_runner);
 void bottom_status_bar(gui_runner_t *gui_runner);
 
+void plot_osm_map(gui_runner_t *gui_runner);
+
 #endif

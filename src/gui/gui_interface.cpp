@@ -29,6 +29,38 @@ void properties_window(gui_runner_t *gui_runner)
     ImGui::End();
 }
 
+
+void plot_osm_map(gui_runner_t *gui_runner)
+{
+    // ImPlot::BeginPlot("##ImOsmMapPlot");
+
+    // if(!loaded){
+    //     std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
+    //     std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
+    // }
+    // // Top-left of the texture
+    // // Bottom-right of the texture
+    // ImVec2 _uv0{0, 1}, _uv1{1, 0};
+    // ImVec4 _tint{1, 1, 1, 1};
+    // ImVec2 bmin{0, 0};
+    // ImVec2 bmax{256, 256};
+    // if(!loaded){
+
+    //     std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
+    //     std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
+    //     _rawBlob = tileRequest(16, 47867, 20726);
+    
+    //     stbLoad();
+    //     glLoad();
+    // }
+    // if (loaded)
+    // {
+    //     ImPlot::PlotImage("##", _id, bmin, bmax, _uv0, _uv1, _tint);
+    // }
+
+    // ImPlot::EndPlot();
+}
+
 void main_window(gui_runner_t *gui_runner)
 {
     ImGui::Begin("Main", nullptr, ImGuiWindowFlags_MenuBar);

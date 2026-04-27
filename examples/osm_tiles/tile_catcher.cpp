@@ -97,6 +97,7 @@ void glLoad(){
 }
 
 void stbLoad() {
+  stbi_set_flip_vertically_on_load(false);
   data = stbi_load_from_memory(_rawBlob.data(), _rawBlob.size(), &_width, &_height, &_channels, STBI_rgb_alpha);
 }
 
