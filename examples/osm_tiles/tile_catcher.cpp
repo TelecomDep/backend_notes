@@ -116,24 +116,19 @@ Color lerpColor(Color c1, Color c2, double ratio) {
 void calculate_heatmap()
 {
   Color start = {255, 0, 0}; // Red
-  Color end = {0, 0, 255};   // Blue
+  Color end = {0, 255, 0};   // Green
   int steps = 100;
-
-  for (int i = 0; i < steps; ++i) {
-      double ratio = (double)i / (steps - 1);
-      Color current = lerpColor(start, end, ratio);
-  }
 
   float radius = 20;
   float lats[5] = { 55.008430, 55.008023, 55.007919, 55.007987, 55.008341 };
   float lons[5] = {82.944442, 82.944005, 82.944424, 82.945125, 82.945170};
 
-  // float x_pixels[5] = { 10, 40, 100, 120, 200 };
-  // float y_pixels[5] = {10, 50, 200, 134, 55};
-  // float value[5] = { 80, 5, 10, 95, 59 };
-  float x_pixels[2] = { 10, 40};
-  float y_pixels[2] = {10, 100};
-  float value[2] = { 1, 100};
+  float x_pixels[5] = { 10, 40, 100, 120, 200 };
+  float y_pixels[5] = {10, 50, 200, 134, 55};
+  float value[5] = { 80, 5, 10, 95, 59 };
+  // float x_pixels[2] = { 10, 40};
+  // float y_pixels[2] = {10, 100};
+  // float value[2] = { 1, 100};
 
   int channels = 4; // RGB
   int h = _height;
@@ -145,7 +140,7 @@ void calculate_heatmap()
     {
       float summ_weight = 0;
       float summ_dmn = 0.001;
-      for (int i = 0; i < 2; i++)
+      for (int i = 0; i < 5; i++)
       {
         // Calculate distance per each experimental point
         float d = sqrt(pow(x - x_pixels[i], 2) + pow(y - y_pixels[i], 2));
