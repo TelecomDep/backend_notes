@@ -104,7 +104,7 @@ struct Color {
 };
 
 // Calculates the color at a specific 'ratio' (0.0 to 1.0)
-Color lerpColor(Color c1, Color c2, double ratio) {
+Color gradientColor(Color c1, Color c2, double ratio) {
     return {
         static_cast<int>(c1.r + (c2.r - c1.r) * ratio),
         static_cast<int>(c1.g + (c2.g - c1.g) * ratio),
@@ -126,9 +126,6 @@ void calculate_heatmap()
   float x_pixels[5] = { 10, 40, 100, 120, 200 };
   float y_pixels[5] = {10, 50, 200, 134, 55};
   float value[5] = { 80, 5, 10, 95, 59 };
-  // float x_pixels[2] = { 10, 40};
-  // float y_pixels[2] = {10, 100};
-  // float value[2] = { 1, 100};
 
   int channels = 4; // RGB
   int h = _height;
@@ -144,15 +141,13 @@ void calculate_heatmap()
       {
         // Calculate distance per each experimental point
         float d = sqrt(pow(x - x_pixels[i], 2) + pow(y - y_pixels[i], 2));
-        summ_dmn += float(1 / d);
+        summ_dmn += float(1 / pow(d, 1));
         summ_weight += value[i] / d;
-        //printf("To point [%d] Distance = %f, to x = %d, y = %d\n", i, d, x, y);
       }
       float weight = summ_weight / summ_dmn;
-      //printf("weight = %f\n",weight);
 
       double ratio = (double)weight / (steps - 1);
-      Color current = lerpColor(start, end, ratio);
+      Color current = gradientColor(start, end, ratio);
       
       int index = (y * w + x) * channels;
       image[index + 0] = current.r; // Red gradient
