@@ -32,8 +32,10 @@ void properties_window(gui_runner_t *gui_runner)
 
 void plot_osm_map(gui_runner_t *gui_runner)
 {
-    // ImPlot::BeginPlot("##ImOsmMapPlot");
-
+    ImPlot::BeginPlot("##ImOsmMapPlot", {-1, -1}); // size = {-1, -1} - растянет на весь виджет
+    ImPlotRect limits = ImPlot::GetPlotLimits();
+    std::cout << " limits.X (min, max) " << limits.X.Min << ", " << limits.X.Max << std::endl;
+    std::cout << " limits.Y (min, max) " << limits.Y.Min << ", " << limits.Y.Max << std::endl;
     // if(!loaded){
     //     std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
     //     std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
@@ -58,7 +60,7 @@ void plot_osm_map(gui_runner_t *gui_runner)
     //     ImPlot::PlotImage("##", _id, bmin, bmax, _uv0, _uv1, _tint);
     // }
 
-    // ImPlot::EndPlot();
+    ImPlot::EndPlot();
 }
 
 void main_window(gui_runner_t *gui_runner)
@@ -72,8 +74,9 @@ void main_window(gui_runner_t *gui_runner)
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Custom Map")) {
-            
-            
+
+            plot_osm_map(gui_runner);
+
             ImGui::EndTabItem();
         }
 
