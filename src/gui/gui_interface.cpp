@@ -1,3 +1,5 @@
+#include "gui_interface.h"
+
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 
@@ -12,7 +14,8 @@
 #include "implot.h"
 #include "imgui_internal.h"
 
-#include "gui_interface.h"
+#include "tile_catcher.h"
+
 
 
 
@@ -32,10 +35,26 @@ void properties_window(gui_runner_t *gui_runner)
 
 void plot_osm_map(gui_runner_t *gui_runner)
 {
+    // Получаем размер окна с графиком в пикселях
+    ImVec2 win_size = ImGui::GetWindowSize();
+
+    // Считаем сколько картинок необходимо, чтобы заполнить весь виджет тайлами.
+    int nof_x_tiles = std::floor(win_size.x / gui_runner->tile_size);
+    int nof_y_tiles = std::floor(win_size.y / gui_runner->tile_size);
+
+    // Выбираем верхнюю левую точку на карте, чтобы от нее начинать считать тайлы
+    double lat_left_top = 55.013266;
+    double lon_left_top = 82.950782;
+    int z = 13;
+
+    
+
     ImPlot::BeginPlot("##ImOsmMapPlot", {-1, -1}); // size = {-1, -1} - растянет на весь виджет
-    ImPlotRect limits = ImPlot::GetPlotLimits();
-    std::cout << " limits.X (min, max) " << limits.X.Min << ", " << limits.X.Max << std::endl;
-    std::cout << " limits.Y (min, max) " << limits.Y.Min << ", " << limits.Y.Max << std::endl;
+    ImPlotRect AxisLimits = ImPlot::GetPlotLimits();
+    std::cout << " AxisLimits.X (min, max) " << AxisLimits.X.Min << ", " << AxisLimits.X.Max << std::endl;
+    std::cout << " AxisLimits.Y (min, max) " << AxisLimits.Y.Min << ", " << AxisLimits.Y.Max << std::endl;
+    std::cout << " win_size (x, y) " << win_size.x << ", " << win_size.y << std::endl;
+    std::cout << " nof_tiles (x, y) " << nof_x_tiles << ", " << nof_y_tiles << std::endl;
     // if(!loaded){
     //     std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
     //     std::cout << "min max y = " << _minY << " " << _maxY << std::endl;

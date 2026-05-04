@@ -6,6 +6,7 @@
 
 typedef struct gui_runner_s{
     bool is_running;
+    int tile_size = 256;
     std::vector<tiles_t>    tiles;      // Работа с тайлами
 } gui_runner_t;
 

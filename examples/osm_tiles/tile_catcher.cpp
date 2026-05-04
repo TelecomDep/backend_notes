@@ -83,14 +83,10 @@ ImVec2 _plotSize{};
 int _width{256}, _height{256}, _channels{};
 std::vector<unsigned char> _rawBlob;
 unsigned char *data;
-unsigned char pixmap_heatmap[256*256*4];
-std::vector<std::byte> rgbaBlob;
 
-// _rgbaBlob.shrink_to_fit();
 GLuint _id{0};
 
 bool loaded = false;
-bool is_heatmap_calculated = false;
 
 
 template <typename T>
@@ -112,63 +108,6 @@ Color gradientColor(Color c1, Color c2, double ratio) {
     };
 }
 
-
-void calculate_heatmap()
-{
-  Color start = {255, 0, 0}; // Red
-  Color end = {0, 255, 0};   // Green
-  int steps = 100;
-
-  float radius = 20;
-  float lats[5] = { 55.008430, 55.008023, 55.007919, 55.007987, 55.008341 };
-  float lons[5] = {82.944442, 82.944005, 82.944424, 82.945125, 82.945170};
-
-  float x_pixels[5] = { 10, 40, 100, 120, 200 };
-  float y_pixels[5] = {10, 50, 200, 134, 55};
-  float value[5] = { 80, 5, 10, 95, 59 };
-
-  int channels = 4; // RGB
-  int h = _height;
-  int w = _width;
-  std::vector<unsigned char> image(w * h * channels);
-  for (int y = 0; y < h; ++y)
-  {
-    for (int x = 0; x < w; ++x)
-    {
-      float summ_weight = 0;
-      float summ_dmn = 0.001;
-      for (int i = 0; i < 5; i++)
-      {
-        // Calculate distance per each experimental point
-        float d = sqrt(pow(x - x_pixels[i], 2) + pow(y - y_pixels[i], 2));
-        summ_dmn += float(1 / pow(d, 1));
-        summ_weight += value[i] / d;
-      }
-      float weight = summ_weight / summ_dmn;
-
-      double ratio = (double)weight / (steps - 1);
-      Color current = gradientColor(start, end, ratio);
-      
-      int index = (y * w + x) * channels;
-      image[index + 0] = current.r; // Red gradient
-      image[index + 1] = current.g;   // Green gradient
-      image[index + 2] = current.b;   // Blue constant
-      image[index + 3] = 255;   // Alfa constant
-    }
-  }
-  stbi_write_png("gradient.png", w, h, channels, image.data(), w * channels);
-
-  unsigned char *pixMap = stbi_load("gradient.png", &w, &h, &channels, STBI_rgb_alpha);
-
-  glGenTextures(1, &_id);
-  glBindTexture(GL_TEXTURE_2D, _id);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA,
-                GL_UNSIGNED_BYTE, pixMap);
-  is_heatmap_calculated = true;
-}
 
 void glLoad(){
   glGenTextures(1, &_id);
@@ -234,7 +173,6 @@ std::vector<unsigned char> tileRequest(int z, int x, int y) {
 
 int main(){
 
-  calculate_heatmap();
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
   SDL_Window *window = SDL_CreateWindow(
       "Backend start", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -284,23 +222,20 @@ int main(){
     ImVec4 _tint{1, 1, 1, 1};
     ImVec2 bmin{0, 0};
     ImVec2 bmax{256, 256};
-    // if (!loaded)
-    // {
+    if (!loaded)
+    {
 
-    //   std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
-    //   std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
-    //   _rawBlob = tileRequest(16, 47867, 20726);
+      std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
+      std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
+      _rawBlob = tileRequest(16, 47867, 20726);
 
-    //   stbLoad();
-    //   glLoad();
-    // }
-    // if (loaded)
-    // {
-    //   ImPlot::PlotImage("##", _id, bmin, bmax, _uv0, _uv1, _tint);
-      
-    // }
-    if(is_heatmap_calculated){
+      stbLoad();
+      glLoad();
+    }
+    if (loaded)
+    {
       ImPlot::PlotImage("##", _id, bmin, bmax, _uv0, _uv1, _tint);
+      
     }
 
     ImPlot::EndPlot();
