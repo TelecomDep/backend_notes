@@ -67,14 +67,7 @@ GLuint tileAt(int z, int x, int y, gui_runner_t *gui_runner){
 
 void plot_osm_map(gui_runner_t *gui_runner)
 {
-    // Получаем размер окна с графиком в пикселях
-    ImVec2 win_size = ImGui::GetWindowSize();
-
-    // Считаем сколько картинок необходимо, чтобы заполнить весь виджет тайлами.
-    int nof_x_tiles = std::floor(win_size.x / gui_runner->tile_size);
-    int nof_y_tiles = std::floor(win_size.y / gui_runner->tile_size);
-
-    // Выбираем центр на карте, чтобы от нее начинать считать тайлы
+    // Выбираем центр на карте, чтобы от нее начинать считать тайлы.
     double lat_center = 55.013266;
     double lon_center = 82.950782;
     double delta_lla = 0.1;
@@ -92,6 +85,9 @@ void plot_osm_map(gui_runner_t *gui_runner)
     int minY = lat2y(axisLimits.Y.Max, zoom); // Здесь намерено Min Max поменяли местами. См. нумерацию тайлов.
     int maxY = lat2y(axisLimits.Y.Min, zoom); // Здесь намерено Min Max поменяли местами. См. нумерацию тайлов.
     
+    // Загружаем и выводим на экран все тайлы.
+    // Последовательно. Сначала загружаем, затем выводим.
+    // TODO: распараллелить. 
     for (int x = minX; x <= maxX; x++)
     {
         for (int y = minY; y <= maxY; y++)
