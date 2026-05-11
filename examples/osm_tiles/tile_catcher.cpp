@@ -11,6 +11,7 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <stb_image.h>
+#include "stb_image_write.h"
 #include <curl/curl.h>
 
 #include "backends/imgui_impl_opengl3.h"
@@ -82,9 +83,31 @@ ImVec2 _plotSize{};
 int _width{256}, _height{256}, _channels{};
 std::vector<unsigned char> _rawBlob;
 unsigned char *data;
+
 GLuint _id{0};
 
 bool loaded = false;
+
+
+template <typename T>
+inline T RandomRange(T min, T max) {
+    T scale = rand() / (T) RAND_MAX;
+    return min + scale * ( max - min );
+}
+
+struct Color {
+    int r, g, b;
+};
+
+// Calculates the color at a specific 'ratio' (0.0 to 1.0)
+Color gradientColor(Color c1, Color c2, double ratio) {
+    return {
+        static_cast<int>(c1.r + (c2.r - c1.r) * ratio),
+        static_cast<int>(c1.g + (c2.g - c1.g) * ratio),
+        static_cast<int>(c1.b + (c2.b - c1.b) * ratio)
+    };
+}
+
 
 void glLoad(){
   glGenTextures(1, &_id);
@@ -97,6 +120,7 @@ void glLoad(){
 }
 
 void stbLoad() {
+  stbi_set_flip_vertically_on_load(true);
   data = stbi_load_from_memory(_rawBlob.data(), _rawBlob.size(), &_width, &_height, &_channels, STBI_rgb_alpha);
 }
 
@@ -149,80 +173,80 @@ std::vector<unsigned char> tileRequest(int z, int x, int y) {
 
 int main(){
 
-      SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-    SDL_Window* window = SDL_CreateWindow(
-        "Backend start", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+  SDL_Window *window = SDL_CreateWindow(
+      "Backend start", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+      1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+  SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 
-    ImGui::CreateContext();
-    ImPlot::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Включить Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Включить Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Включить Docking
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Включить Multi-Viewport / Platform Windows. Позволяет работать "окнам" вне основного окна. 
+  ImGui::CreateContext();
+  ImPlot::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Включить Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Включить Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Включить Docking
+  // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Включить Multi-Viewport / Platform Windows. Позволяет работать "окнам" вне основного окна.
 
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init("#version 330");
+  ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+  ImGui_ImplOpenGL3_Init("#version 330");
 
-    bool running = true;
-    // auto last_frame_time = std::chrono::steady_clock::now();
-    while (running) {
+  bool running = true;
+  // auto last_frame_time = std::chrono::steady_clock::now();
+  while (running)
+  {
 
-        // Обработка event'ов (inputs, window resize, mouse moving, etc.)
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT) {
-                running = false;
-            }
-        }
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
-        ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_None);
-
-        
-
-
-        ImPlot::BeginPlot("##ImOsmMapPlot");
-
-        if(!loaded){
-          std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
-          std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
-        }
-        // Top-left of the texture
-        // Bottom-right of the texture
-        ImVec2 _uv0{0, 1}, _uv1{1, 0};
-        ImVec4 _tint{1, 1, 1, 1};
-        ImVec2 bmin{0, 0};
-        ImVec2 bmax{256, 256};
-        if(!loaded){
-
-          std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
-          std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
-          _rawBlob = tileRequest(16, 47867, 20726);
-      
-          stbLoad();
-          glLoad();
-        }
-        if (loaded)
-        {
-          ImPlot::PlotImage("##", _id, bmin, bmax, _uv0, _uv1, _tint);
-        }
-
-        ImPlot::EndPlot();
-
-        ImGui::Render();
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        SDL_GL_SwapWindow(window);
+    // Обработка event'ов (inputs, window resize, mouse moving, etc.)
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+      ImGui_ImplSDL2_ProcessEvent(&event);
+      if (event.type == SDL_QUIT)
+      {
+        running = false;
+      }
     }
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+    ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_None);
+    ImPlot::PushStyleColor(ImPlotCol_PlotBg, {0,0,0,0});
+    ImPlot::BeginPlot("##ImOsmMapPlot");
+
+    
+    // Top-left of the texture
+    // Bottom-right of the texture
+    ImVec2 _uv0{0, 1}, _uv1{1, 0};
+    ImVec4 _tint{1, 1, 1, 1};
+    ImVec2 bmin{0, 0};
+    ImVec2 bmax{256, 256};
+    if (!loaded)
+    {
+
+      std::cout << "min max X = " << _minX << " " << _maxX << std::endl;
+      std::cout << "min max y = " << _minY << " " << _maxY << std::endl;
+      _rawBlob = tileRequest(16, 47867, 20726);
+
+      stbLoad();
+      glLoad();
+    }
+    if (loaded)
+    {
+      ImPlot::PlotImage("##", _id, bmin, bmax, _uv0, _uv1, _tint);
+      
+    }
+
+    ImPlot::EndPlot();
+
+    ImGui::Render();
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    SDL_GL_SwapWindow(window);
+  }
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();

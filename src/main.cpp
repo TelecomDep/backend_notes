@@ -12,205 +12,28 @@
 #include "implot.h"
 #include "imgui_internal.h"
 
-
-bool running = true;
-
-void run_gui()
-{
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-    SDL_Window* window = SDL_CreateWindow(
-        "Backend start", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-
-    ImGui::CreateContext();
-    ImPlot::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Включить Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Включить Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Включить Docking
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Включить Multi-Viewport / Platform Windows. Позволяет работать "окнам" вне основного окна. 
-
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init("#version 330");
-
-    // auto last_frame_time = std::chrono::steady_clock::now();
-    while (running) {
-
-        // Обработка event'ов (inputs, window resize, mouse moving, etc.)
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            // std::cout << "Processing some event: "<< event.type << " timestamp: " << event.motion.timestamp << std::endl;
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT) {
-                running = false;
-            }
-        }
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
-        // ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_None);
-        // ImGui::DockSpaceOverViewport();
-        // ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-        ImGuiID dockspace_id = ImGui::GetID("My Dockspace");
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-        // Create settings
-        if (ImGui::DockBuilderGetNode(dockspace_id) == nullptr)
-        {
-            ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
-            ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
-            ImGuiID dock_id_left = 0;
-            ImGuiID dock_id_main = dockspace_id;
-            ImGui::DockBuilderSplitNode(dock_id_main, ImGuiDir_Left, 0.20f, &dock_id_left, &dock_id_main);
-            ImGuiID dock_id_left_top = 0;
-            ImGuiID dock_id_left_bottom = 0;
-            ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Up, 0.50f, &dock_id_left_top, &dock_id_left_bottom);
-            ImGui::DockBuilderDockWindow("Main", dock_id_main);
-            ImGui::DockBuilderDockWindow("Properties", dock_id_left_top);
-            ImGui::DockBuilderDockWindow("Scene", dock_id_left_bottom);
-            ImGui::DockBuilderFinish(dockspace_id);
-        }
-        ImGui::DockSpaceOverViewport(dockspace_id, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
-
-        //1. 
-        {
-            // ImGui::SetNextWindowSize(ImVec2(686,416));
-            static int counter = 0;
-
-            ImGui::Begin("Properties");
-            if (ImGui::Button("Button"))
-                counter++;
-
-            for (int i = 0; i < 10; i++){
-                ImGui::Text("counter = %d", counter);
-            }
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::Text("Window size: %lfx%lf", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-            ImGui::End();
-        }
-        // {
-        //     static int counter = 0;
-        //     if (ImGui::Button("Button")){
-        //         counter++;
-        //         // можно что угодно добавить при нажатии на кнопку
-        //     }                        
-        //     ImGui::Text("counter = %d", counter);
-
-        //     ImGui::Button("change me", ImVec2(91,59));
-        // }
-
-        // // Default color style
-        // {
-        //     ImGui::Begin("Color theme");
-
-        //     static int style_idx = 0;
-
-        //     if (ImGui::Button("Light"))
-        //         style_idx = 1;
-        //     if (ImGui::Button("Dark"))
-        //         style_idx = 0;
-        //     if (ImGui::Button("Classic"))
-        //         style_idx = 2;
-
-        //     switch (style_idx)
-        //     {
-        //         case 0: ImGui::StyleColorsDark(); break;
-        //         case 1: ImGui::StyleColorsLight(); break;
-        //         case 2: ImGui::StyleColorsClassic(); break;
-        //     }
-
-        //     ImGui::End();
-        // }
-        if(ImGui::BeginMainMenuBar()){
-            if (ImGui::BeginMenu("File"))
-            {
-                
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-        // ImGui::ShowDemoWindow();
-
-        // ImGui::Begin("Simple Plot");
-        // static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
-        // ImGui::PlotLines("Frame Times", arr, IM_COUNTOF(arr));
-        // ImGui::End();
-        // ImPlot::ShowDemoWindow();
-        // ImGui::Begin("Mouse Position");
-        // ImVec2 mouse = ImGui::GetMousePos();
-        // ImGui::Text("Mouse position: x = %f, y = %f", mouse.x, mouse.y);
-        // ImGui::End();
-
-
-        ImGui::Render();
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        SDL_GL_SwapWindow(window);
-    }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImPlot::DestroyContext();
-    ImGui::DestroyContext();
-    SDL_GL_DeleteContext(gl_context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
+#include "gui_interface.h"
+#include "defs.h"
 
 int main(int argc, char *argv[]) {
+
+    my_global_t global_runner;
+    global_runner.gui_runner._blankTile._rawBlob.resize(256 * 256 * 4);
+    int RGBA_SZ = 4;
+    std::array<uint8_t, 4> Snow = {100, 100, 150, 100};
+    global_runner.gui_runner._blankTile._rawBlob.shrink_to_fit();
+    for (size_t i = 0; i != global_runner.gui_runner._blankTile._rawBlob.size(); i = i + 4) {
+        global_runner.gui_runner._blankTile._rawBlob[i] = (Snow[0]);
+        global_runner.gui_runner._blankTile._rawBlob[i + 1] = (Snow[1]);
+        global_runner.gui_runner._blankTile._rawBlob[i + 2] = (Snow[2]);
+        global_runner.gui_runner._blankTile._rawBlob[i + 3] = (Snow[3]);
+    }
+    stbLoad(&global_runner.gui_runner._blankTile);
+    glLoad(&global_runner.gui_runner._blankTile);
     
-    std::thread gui_thread(run_gui);
+    
+    std::thread gui_thread(run_gui, &global_runner.gui_runner);
 
     gui_thread.join();
     return 0;
 }
-
-        // Cool plots
-        // {
-        //     ImGui::Begin("Hello, Plots!");
-        //     static ScrollingBuffer sdata1, sdata2;
-        //     static RollingBuffer rdata1, rdata2;
-        //     // Add points to the buffers every 0.02 seconds
-        //     static float t = 0, last_t = 0.0f;
-        //     if (t == 0 || t - last_t >= 0.001f)
-        //     {
-        //         sdata1.AddPoint(t, mouse.x * 0.0005f);
-        //         rdata1.AddPoint(t, mouse.x * 0.0005f);
-        //         sdata2.AddPoint(t, mouse.y * 0.0005f);
-        //         rdata2.AddPoint(t, mouse.y * 0.0005f);
-        //         last_t = t;
-        //     }
-        //     t += ImGui::GetIO().DeltaTime;
-
-        //     static float history = 10.0f;
-        //     ImGui::SliderFloat("History",&history,1,30,"%.1f s");
-        //     rdata1.Span = history;
-        //     rdata2.Span = history;
-
-        //     static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels;
-
-        //     if (ImPlot::BeginPlot("##Scrolling", ImVec2(-1,ImGui::GetTextLineHeight()*10))) {
-        //         ImPlot::SetupAxes(nullptr, nullptr, flags, flags);
-        //         ImPlot::SetupAxisLimits(ImAxis_X1,t - history, t, ImGuiCond_Always);
-        //         ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
-        //         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL,0.5f);
-        //         ImPlot::PlotShaded("Mouse X", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), -INFINITY, 0, sdata1.Offset, 2 * sizeof(float));
-        //         ImPlot::PlotLine("Mouse Y", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, 2*sizeof(float));
-        //         ImPlot::EndPlot();
-        //     }
-        //     if (ImPlot::BeginPlot("##Rolling", ImVec2(-1,ImGui::GetTextLineHeight()*10))) {
-        //         ImPlot::SetupAxes(nullptr, nullptr, flags, flags);
-        //         ImPlot::SetupAxisLimits(ImAxis_X1,0,history, ImGuiCond_Always);
-        //         ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
-        //         ImPlot::PlotLine("Mouse X", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 0, 2 * sizeof(float));
-        //         ImPlot::PlotLine("Mouse Y", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 0, 2 * sizeof(float));
-        //         ImPlot::EndPlot();
-        //     }
-            
-        //     ImGui::End();
-        // }
