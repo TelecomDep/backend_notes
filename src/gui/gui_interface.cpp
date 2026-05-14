@@ -92,12 +92,12 @@ void plot_osm_map(gui_runner_t *gui_runner)
     {
         for (int y = minY; y <= maxY; y++)
         {
-                ImVec2 uv0{0, 0};
-                ImVec2 uv1{1, 1};
-                ImVec4 tint{1, 1, 1, 1};
-                ImPlotPoint bmin{x2lon(x, zoom), y2lat(y + 1, zoom)};
-                ImPlotPoint bmax{x2lon(x + 1, zoom), y2lat(y, zoom)};
-                ImPlot::PlotImage("##tile_", (ImTextureID)(intptr_t)tileAt(zoom, x, y, gui_runner), bmin, bmax, uv0, uv1, tint);
+            ImVec2 uv0{0, 0};
+            ImVec2 uv1{1, 1};
+            ImVec4 tint{1, 1, 1, 1};
+            ImPlotPoint bmin{x2lon(x, zoom), y2lat(y + 1, zoom)};
+            ImPlotPoint bmax{x2lon(x + 1, zoom), y2lat(y, zoom)};
+            ImPlot::PlotImage("##tile_", (ImTextureID)(intptr_t)tileAt(zoom, x, y, gui_runner), bmin, bmax, uv0, uv1, tint);
         }
     }
 
